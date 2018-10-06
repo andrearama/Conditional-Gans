@@ -3,53 +3,57 @@ import numpy as np
 import scipy
 import scipy.misc
 import matplotlib.pyplot as plt
-
+import glob
+import cv2
+from random import random
 
 class Mnist(object):
 
     def __init__(self):
 
         self.dataname = "Mnist"
-        self.dims = 28*28
-        self.shape = [28 , 28 , 1]
-        self.image_size = 28
-        self.data, self.data_y = self.load_mnist()
+        self.image_size = 56
+        
+        self.dims = self.image_size*self.image_size
+        self.shape = [self.image_size , self.image_size , 3]
 
-    def load_mnist(self):
+        self.data, self.data_y = self.load_dataset()
 
-        data_dir = os.path.join("./data", "mnist")
-        fd = open(os.path.join(data_dir, 'train-images-idx3-ubyte'))
-        loaded = np.fromfile(file=fd , dtype=np.uint8)
-        trX = loaded[16:].reshape((60000, 28 , 28 ,  1)).astype(np.float)
+    def load_dataset(self):
 
-        fd = open(os.path.join(data_dir, 'train-labels-idx1-ubyte'))
-        loaded = np.fromfile(file=fd, dtype=np.uint8)
-        trY = loaded[8:].reshape((60000)).astype(np.float)
-
-        fd = open(os.path.join(data_dir, 't10k-images-idx3-ubyte'))
-        loaded = np.fromfile(file=fd, dtype=np.uint8)
-        teX = loaded[16:].reshape((10000, 28 , 28 , 1)).astype(np.float)
-
-        fd = open(os.path.join(data_dir, 't10k-labels-idx1-ubyte'))
-        loaded = np.fromfile(file=fd, dtype=np.uint8)
-        teY = loaded[8:].reshape((10000)).astype(np.float)
-
-        trY = np.asarray(trY)
-        teY = np.asarray(teY)
-
-        X = np.concatenate((trX, teX), axis=0)
-        y = np.concatenate((trY, teY), axis=0)
-
+        X = []
+        y = []
+        
+        
+        folder_list = glob.glob("data/mnist/*")
+        folder_number = len([folder for folder in folder_list if os.path.isdir(folder)])
+        self.number_of_classes = folder_number
+        folder_counter = -1
+        for folder_name in folder_list:
+            if os.path.isdir(folder_name):
+                folder_counter += 1
+                image_list = glob.glob(folder_name+"/*")     
+                for image_name in image_list:
+                    img = cv2.imread(image_name)
+                    if img is not None:
+                        img = cv2.resize(img, (self.image_size, self.image_size), interpolation = cv2.INTER_AREA)
+                        X.append(img.astype(np.float64))
+                        y.append(np.float64(folder_counter))               
+                    else:
+                        print("Could not load ",image_name,"Is it an image?")
+        X = np.array(X)
+        y = np.array(y)
+        
         seed = 547
-
+        
         np.random.seed(seed)
         np.random.shuffle(X)
         np.random.seed(seed)
         np.random.shuffle(y)
-
+        
         #convert label to one-hot
-
-        y_vec = np.zeros((len(y), 10), dtype=np.float)
+        
+        y_vec = np.zeros((len(y), folder_number), dtype=np.float)
         for i, label in enumerate(y):
             y_vec[i, int(y[i])] = 1.0
 
@@ -145,8 +149,10 @@ def vis_square(visu_path , data , type):
 
 
 def sample_label():
+    folder_list = glob.glob("data/mnist/*")
+    folder_number = len([folder for folder in folder_list if os.path.isdir(folder)])    
     num = 64
-    label_vector = np.zeros((num , 10), dtype=np.float)
+    label_vector = np.zeros((num , folder_number), dtype=np.float)
     for i in range(0 , num):
-        label_vector[i , int(i/8)] = 1.0
+        label_vector[i , int(folder_number*random())] = 1.0
     return label_vector

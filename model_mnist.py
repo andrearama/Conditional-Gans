@@ -28,7 +28,7 @@ class CGAN(object):
 
     def build_model(self):
 
-        self.fake_images = self.gern_net(self.z, self.y)
+        self.fake_images = self.gern_net(self.z, self.y,self.data_ob.image_size)
         G_image = tf.summary.image("G_out", self.fake_images)
         ##the loss of gerenate network
         D_pro, D_logits = self.dis_net(self.images, self.y, False)
@@ -154,7 +154,7 @@ class CGAN(object):
 
             print("the visualization finish!")
 
-    def gern_net(self, z, y):
+    def gern_net(self, z, y, image_size):
 
         with tf.variable_scope('generator') as scope:
 
@@ -167,7 +167,7 @@ class CGAN(object):
 
             d1 = tf.concat([d1, y], 1)
 
-            d2 = tf.nn.relu(batch_normal(fully_connect(d1, output_size=7*7*2*64, scope='gen_fully2'), scope='gen_bn2'))
+            d2 = tf.nn.relu(batch_normal(fully_connect(d1, output_size=(image_size/4)*(image_size/4)*2*64, scope='gen_fully2'), scope='gen_bn2'))
 
             d2 = tf.reshape(d2, [self.batch_size, c1, c1, 64 * 2])
             d2 = conv_cond_concat(d2, yb)
@@ -192,7 +192,7 @@ class CGAN(object):
             # concat
             concat_data = conv_cond_concat(images, yb)
 
-            conv1, w1 = conv2d(concat_data, output_dim=10, name='dis_conv1')
+            conv1, w1 = conv2d(concat_data, output_dim=2, name='dis_conv1')
             tf.add_to_collection('weight_1', w1)
 
             conv1 = lrelu(conv1)
