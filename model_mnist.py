@@ -122,11 +122,7 @@ class CGAN(object):
 
             output = sess.run(self.fake_images, feed_dict={self.z: sample_z, self.y: sample_label()})
 
-            save_images(output, [8, 8], './{}/test{:02d}_{:04d}.png'.format(self.sample_dir, 0, 0))
-
-            image = cv2.imread('./{}/test{:02d}_{:04d}.png'.format(self.sample_dir, 0, 0), 0)
-
-            cv2.imshow("test", image)
+            cv2.imshow("test", output[0])
 
             cv2.waitKey(-1)
 
@@ -159,6 +155,7 @@ class CGAN(object):
         with tf.variable_scope('generator') as scope:
 
             yb = tf.reshape(y, shape=[self.batch_size, 1, 1, self.y_dim])
+
             z = tf.concat([z, y], 1)
             c1, c2 = int( self.output_size / 4), int(self.output_size / 2 ) 
 
@@ -170,6 +167,7 @@ class CGAN(object):
             d2 = tf.nn.relu(batch_normal(fully_connect(d1, output_size=(image_size/4)*(image_size/4)*2*64, scope='gen_fully2'), scope='gen_bn2'))
 
             d2 = tf.reshape(d2, [self.batch_size, c1, c1, 64 * 2])
+
             d2 = conv_cond_concat(d2, yb)
 
             d3 = tf.nn.relu(batch_normal(de_conv(d2, output_shape=[self.batch_size, c2, c2, 128], name='gen_deconv1'), scope='gen_bn3'))

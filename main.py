@@ -29,7 +29,7 @@ if not os.path.exists(FLAGS.visua_path):
 
 def main(_):
 
-    mn_object = Mnist()
+    mn_object = Mnist(output_size=FLAGS.output_size)
 
     cg = CGAN(data_ob = mn_object, sample_dir = FLAGS.sample_dir, output_size=FLAGS.output_size, learn_rate=FLAGS.learn_rate
          , batch_size=FLAGS.batch_size, z_dim=FLAGS.z_dim, y_dim=FLAGS.y_dim, log_dir=FLAGS.log_dir

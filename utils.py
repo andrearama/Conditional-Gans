@@ -9,10 +9,10 @@ from random import random
 
 class Mnist(object):
 
-    def __init__(self):
+    def __init__(self,output_size):
 
         self.dataname = "Mnist"
-        self.image_size = 56
+        self.image_size = output_size
         
         self.dims = self.image_size*self.image_size
         self.shape = [self.image_size , self.image_size , 3]
